@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>WOLF LABS | MAIN SERIES: The Imposter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #050505;
+            --bg-panel: #121212;
+            --bg-elevated: #181818;
+            --bg-hover: #1f1f1f;
+            --brand-accent: #1DB954; 
+            --brand-hover: #1ed760;
+            --text-main: #FFFFFF;
+            --text-sub: #94a3b8;
+            --error-red: #e91429;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            overflow: hidden;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        h1, h2, h3, .brand-font { font-family: 'Rajdhani', sans-serif; text-transform: uppercase; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* SPECTRAL LAYER */
+        body::before {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.05) 50%), linear-gradient(90deg, rgba(29, 185, 84, 0.015), rgba(0, 0, 0, 0), rgba(29, 185, 84, 0.015));
+            z-index: 1000;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+            opacity: 0.3;
+        }
+
+        /* CUSTOM SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.4); }
+
+        /* HUD TOP */
+        #top-nav {
+            background: linear-gradient(to bottom, rgba(5,5,5,0.95) 0%, transparent);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* UI ELEMENTS */
+        .glass-card {
+            background: var(--bg-panel);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        /* DRAG AND DROP VOCABULARY */
+        .word-bank {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 24px;
+            min-height: 100px;
+        }
+        .draggable-word {
+            background: #1f1f1f;
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: grab;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: inline-block;
+            z-index: 100;
+        }
+        .draggable-word:active { cursor: grabbing; transform: scale(1.05); }
+        .drop-zone {
+            background: rgba(255,255,255,0.02);
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .drop-zone.hovered { background: rgba(29, 185, 84, 0.1); border-color: var(--brand-accent); }
+        .drop-target-area {
+            min-height: 50px;
+            min-width: 150px;
+            border-radius: 12px;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid rgba(255,255,255,0.05);
+            margin-top: 16px;
+            transition: all 0.3s;
+        }
+
+        /* INTERACTIVE SCRIPT (SLEEK DESIGN) */
+        .script-item {
+            padding: 1.2rem 2rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border-radius: 16px;
+            color: rgba(255,255,255,0.3);
+            border-left: 4px solid transparent;
+            margin-bottom: 8px;
+        }
+        .script-item:hover { color: rgba(255,255,255,0.7); background: rgba(255,255,255,0.02); }
+        .script-item.active {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-main);
+            border-left: 6px solid var(--brand-accent);
+            border-radius: 0 16px 16px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .script-item .highlight { 
+            color: inherit;
+            transition: all 0.3s;
+        }
+        .script-item.active .highlight { 
+            color: var(--brand-accent);
+            text-decoration: underline;
+            text-decoration-thickness: 4px;
+            text-underline-offset: 6px;
+        }
+
+        .intel-sidebar {
+            background: var(--bg-panel);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.6);
+        }
+
+        /* COMBAT BUTTONS */
+        .interactive-btn {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 1.5rem 2rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .interactive-btn:hover:not(.locked) { background: rgba(255,255,255,0.05); border-color: var(--brand-accent); }
+        .interactive-btn.active { border-color: var(--brand-accent); background: rgba(29, 185, 84, 0.08); transform: translateX(8px); }
+        .interactive-btn.correct { background: rgba(29, 185, 84, 0.15) !important; border-color: var(--brand-accent) !important; color: var(--brand-accent); }
+        .interactive-btn.wrong { background: rgba(233, 20, 41, 0.15) !important; border-color: var(--error-red) !important; color: var(--error-red); }
+
+        /* DRAWERS */
+        .drawer { background: var(--bg-panel); border-left: 1px solid rgba(255,255,255,0.05); transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 6000; box-shadow: -20px 0 60px rgba(0,0,0,0.8); }
+        .drawer.active { transform: translateX(0); }
+
+        /* ANIMATIONS */
+        .fade-in { animation: fadeIn 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .slide-down { animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* TIMELINE GRAPHIC */
+        .timeline-container { position: relative; width: 100%; padding: 40px 0; }
+        .timeline-line { position: absolute; top: 50%; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.2); transform: translateY(-50%); }
+        .timeline-node { position: absolute; top: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; background: white; border-radius: 50%; z-index: 10; box-shadow: 0 0 10px rgba(255,255,255,0.5); }
+        .timeline-arc { position: absolute; top: 10%; left: 20%; right: 80%; height: 40%; border-top: 2px dashed var(--brand-accent); border-radius: 100% 100% 0 0; z-index: 5; opacity: 0.8; }
+        .timeline-arc-fill { position: absolute; top: 10%; left: 20%; width: 60%; height: 40%; background: linear-gradient(180deg, rgba(29, 185, 84, 0.1) 0%, transparent 100%); border-radius: 100% 100% 0 0; }
+
+        /* FUNCTIONAL SLIDER */
+        input[type=range].wolf-slider { -webkit-appearance: none; width: 100%; background: transparent; }
+        input[type=range].wolf-slider:focus { outline: none; }
+        input[type=range].wolf-slider::-webkit-slider-runnable-track { width: 100%; height: 6px; cursor: pointer; background: rgba(255,255,255,0.1); border-radius: 3px; }
+        input[type=range].wolf-slider::-webkit-slider-thumb { -webkit-appearance: none; height: 24px; width: 24px; border-radius: 50%; background: var(--brand-accent); cursor: pointer; margin-top: -9px; box-shadow: 0 0 15px var(--brand-accent); transition: transform 0.1s; }
+        input[type=range].wolf-slider::-webkit-slider-thumb:hover { transform: scale(1.1); }
+
+        .video-container { position: relative; padding-bottom: 56.25%; height: 0; border-radius: 20px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.8); border: 1px solid rgba(255,255,255,0.1); }
+        .video-container iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        
+        .pill-tag { background: rgba(255,255,255,0.05); color: var(--text-main); padding: 6px 16px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); text-transform: uppercase; letter-spacing: 0.1em; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden text-sm">
+
+    <!-- GLOBAL FULLSCREEN BUTTON -->
+    <button onclick="toggleFullscreen()" class="fixed top-6 right-6 z-[6000] w-12 h-12 flex items-center justify-center bg-black/40 hover:bg-black/90 text-[#b3b3b3] hover:text-white rounded-full backdrop-blur-md transition-all border border-white/10 shadow-2xl" title="Toggle Fullscreen">
+        <i class="fas fa-expand text-lg"></i>
+    </button>
+
+    <!-- TOP NAVIGATION -->
+    <nav class="absolute top-0 left-0 right-0 px-8 py-5 flex justify-between items-center z-40 hidden" id="top-nav">
+        <div class="flex items-center gap-6">
+            <button onclick="goHome()" class="w-12 h-12 rounded-full bg-white/5 border border-white/10 text-white flex items-center justify-center hover:bg-white/10 transition-colors" title="Exit to Dashboard">
+                <i class="fas fa-power-off text-lg"></i>
+            </button>
+            <div class="flex flex-col">
+                <span class="font-black text-xl tracking-tighter text-white">WOLF<span class="text-[var(--brand-accent)]">LABS</span></span>
+                <span class="text-[9px] font-bold text-[var(--brand-accent)] uppercase tracking-[0.3em]">Main Series</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- DASHBOARD (COVER) -->
+    <main id="dashboard" class="flex-grow flex flex-col items-center justify-center relative bg-[#020202] overflow-y-auto pb-10">
+        <div class="max-w-5xl mx-auto w-full px-6 flex flex-col items-center text-center space-y-10 animate-in fade-in">
+            
+            <div class="w-64 h-64 md:w-80 md:h-80 shrink-0 bg-[#0a0a0a] shadow-[0_30px_60px_rgba(0,0,0,0.8)] flex items-center justify-center relative overflow-hidden group rounded-[40px] border border-[var(--brand-accent)]/30">
+                <img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80" class="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 opacity-40 mix-blend-luminosity">
+                <i class="fas fa-user-secret text-8xl md:text-[100px] text-[var(--brand-accent)] relative z-10 drop-shadow-[0_0_30px_rgba(29,185,84,0.4)]"></i>
+            </div>
+            
+            <div class="flex flex-col items-center gap-4 w-full">
+                <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-[0.5em]">Sector 04 // Psychology</p>
+                <h1 class="brand-font text-7xl md:text-[110px] font-black tracking-tighter text-white leading-none">The <br><span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#555]">Imposter</span></h1>
+                
+                <div class="flex flex-wrap justify-center gap-3 mt-6">
+                    <span class="pill-tag">B1 Level</span>
+                    <span class="pill-tag">Present Perfect vs Past Simple</span>
+                    <span class="pill-tag">35 Pages</span>
+                </div>
+            </div>
+
+            <div class="pt-8 w-full flex justify-center">
+                <button onclick="startMission()" class="px-16 py-6 rounded-full bg-[var(--brand-accent)] text-black flex items-center justify-center text-sm font-black uppercase tracking-[0.3em] hover:scale-105 hover:bg-[var(--brand-hover)] transition-all shadow-[0_10px_40px_rgba(29,185,84,0.3)]">
+                    Initialize Core
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- CONTENT ARENA -->
+    <main id="mission-arena" class="hidden flex-grow flex flex-col h-screen w-full relative bg-[#050505] overflow-hidden">
+        <div id="mission-content" class="flex-1 w-full overflow-y-auto px-6 md:px-12 pt-32 pb-48 flex flex-col"></div>
+    </main>
+
+    <!-- NAV CONSOLE (BOTTOM) -->
+    <footer id="nav-console" class="hidden fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-48px)] max-w-[1000px] bg-[#121212]/95 backdrop-blur-xl border border-white/10 rounded-[32px] p-4 z-50 flex justify-between items-center shadow-[0_20px_50px_rgba(0,0,0,0.8)]">
+        
+        <div class="flex items-center gap-4 w-1/4">
+            <div class="w-10 h-10 rounded-full bg-[#1DB954]/10 flex items-center justify-center border border-[#1DB954]/30">
+                <i class="fas fa-fingerprint text-[#1DB954]"></i>
+            </div>
+            <div class="flex flex-col hidden md:flex">
+                <span id="console-title" class="text-[10px] font-black text-white uppercase tracking-widest truncate">Mission Intel</span>
+                <span id="console-type" class="text-[8px] font-bold text-[#b3b3b3] uppercase tracking-widest truncate">Protocol</span>
+            </div>
+        </div>
+
+        <div class="flex flex-col items-center justify-center w-1/2 px-4 gap-3">
+            <div class="flex items-center gap-10">
+                <button onclick="prevStep()" class="text-[#b3b3b3] hover:text-white transition-colors text-xl"><i class="fas fa-chevron-left"></i></button>
+                <span id="console-counter" class="mono text-[10px] font-bold text-[#888] tracking-[0.4em]">01 / 35</span>
+                <button onclick="nextStep()" class="text-white hover:text-[var(--brand-accent)] transition-colors text-xl hover:scale-110"><i class="fas fa-chevron-right"></i></button>
+            </div>
+            <div class="w-full max-w-[240px] h-1.5 bg-white/10 rounded-full overflow-hidden">
+                <div id="progress-bar" class="h-full bg-[var(--brand-accent)] transition-all duration-300" style="width: 0%;"></div>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-5 w-1/4">
+            <button onclick="toggleWhiteboard()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#b3b3b3] hover:text-[var(--brand-accent)] transition-colors" title="Tactical Board">
+                <i class="fas fa-pen-nib"></i>
+            </button>
+            <button onclick="toggleLessonNavigator()" class="w-10 h-10 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-[#b3b3b3] hover:text-white transition-colors" title="Mission Map">
+                <i class="fas fa-list-ul"></i>
+            </button>
+        </div>
+    </footer>
+
+    <!-- TACTICAL BOARD (NOTES) -->
+    <aside id="whiteboard" class="fixed right-0 top-0 h-screen w-[400px] drawer flex flex-col pt-24 z-[5100]">
+        <div class="p-8 border-b border-white/5 bg-[#0a0a0a] flex justify-between items-center shrink-0">
+            <h2 class="brand-font text-2xl font-bold text-[var(--brand-accent)] tracking-widest">Tactical Board</h2>
+            <button onclick="toggleWhiteboard()" class="text-[#b3b3b3] hover:text-white transition-colors w-8 h-8 flex items-center justify-center bg-black/50 rounded-full"><i class="fas fa-times"></i></button>
+        </div>
+        <textarea id="wb-text" class="flex-grow bg-[#050505] text-[#1DB954] p-8 resize-none focus:outline-none mono text-sm leading-relaxed" placeholder="> Capture intel and corrections here..."></textarea>
+    </aside>
+
+    <!-- LESSON NAVIGATOR -->
+    <aside id="lesson-navigator" class="fixed right-0 top-0 h-screen w-80 drawer flex flex-col pt-24 z-[5100]">
+        <div class="p-8 border-b border-white/5 bg-[#0a0a0a] text-white font-black uppercase tracking-widest flex justify-between items-center text-lg shrink-0">
+            Mission Map 
+            <button onclick="toggleLessonNavigator()" class="text-[#b3b3b3] hover:text-white transition-colors w-8 h-8 flex items-center justify-center bg-black/50 rounded-full"><i class="fas fa-times"></i></button>
+        </div>
+        <div id="nav-steps-list" class="flex-grow overflow-y-auto p-4 space-y-2 bg-[#121212]"></div>
+    </aside>
+
+    <script>
+        // --- ENGINE CORE ---
+        let state = { current: 0 };
+        const esc = (s) => s.replace(/'/g, "\\'");
+        
+        const TYPES = { GUIDE: "Protocol", WARMUP: "Prediction", PRE: "Discovery", VOCAB: "Data Link", VIDEO: "Intel", SCRIPT: "Raw Transcript", GRAMMAR: "Logic", DRILL: "Combat", STAND: "Decision", SPEAKING: "Live Arena", WRAP: "Clear" };
+
+        function step(type, title, html) { return { type, title, html }; }
+
+        function updateHUD() {
+            const pBar = document.getElementById('progress-bar');
+            if (pBar) pBar.style.width = ((state.current) / (lessonData.length - 1) * 100) + '%';
+            
+            // Activate Drag and Drop if it's a VOCAB page
+            if (lessonData[state.current].type === TYPES.VOCAB) {
+                setTimeout(setupDragAndDrop, 100);
+            }
+        }
+
+        // --- UTILS ---
+        function shuffleArray(array) {
+            let curId = array.length;
+            while (0 !== curId) {
+                let randId = Math.floor(Math.random() * curId);
+                curId -= 1;
+                let tmp = array[curId];
+                array[curId] = array[randId];
+                array[randId] = tmp;
+            }
+            return array;
+        }
+
+        // --- MAIN SERIES TEMPLATES ---
+
+        function bGuide(title, points) {
+            return step(TYPES.GUIDE, title, `
+                <div class="max-w-4xl mx-auto space-y-12 animate-in fade-in py-10">
+                    <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-[0.6em] bg-[var(--brand-accent)]/10 px-4 py-1.5 rounded-full inline-block">Architect Briefing</p>
+                    <h2 class="brand-font text-6xl md:text-7xl font-black text-white tracking-tight leading-none">${title}</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        ${points.map(p => `<div class="glass-card p-8 border-l-4 border-[var(--brand-accent)]"><p class="text-lg text-white font-medium leading-relaxed">${p}</p></div>`).join('')}
+                    </div>
+                </div>
+            `);
+        }
+
+        function bPrediction(title, prompt, revealText, starter) {
+            return step(TYPES.WARMUP, title, `
+                <div class="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center space-y-16 animate-in fade-in">
+                    <div class="w-full text-left p-6 bg-[#181818] rounded-2xl border-l-4 border-[var(--brand-accent)] mb-4">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-[#888] mb-2">Sync Response</p>
+                        <p class="text-xl font-bold text-white italic">"${starter}"</p>
+                    </div>
+                    <h2 class="brand-font text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight">${prompt}</h2>
+                    <div class="w-full max-w-xl group relative cursor-pointer" onclick="this.querySelector('.reveal-box').classList.remove('opacity-0', 'translate-y-4')">
+                        <div class="absolute inset-0 bg-white/5 rounded-3xl blur-xl opacity-20 group-hover:opacity-40 transition-opacity"></div>
+                        <div class="bg-[#111] p-10 rounded-3xl border border-white/10 relative z-10">
+                            <p class="text-[10px] font-black text-[#666] uppercase tracking-widest mb-4">Click to Reveal Truth</p>
+                            <p class="reveal-box opacity-0 translate-y-4 transition-all duration-500 text-2xl font-bold text-[var(--brand-accent)] italic">"${revealText}"</p>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        // DRAG AND DROP TEMPLATE (WITH SHUFFLE)
+        function bDragVocab(title, words) {
+            let shuffledWords = shuffleArray([...words]);
+            const wordListHtml = shuffledWords.map(w => `<div id="word-${w.id}" draggable="true" class="draggable-word mx-2 my-2 text-sm" data-word="${w.id}">${w.text}</div>`).join('');
+            
+            const dropZonesHtml = words.map(w => `
+                <div class="drop-zone p-6" data-target="${w.id}">
+                    <div class="flex items-start gap-3 mb-3">
+                        <i class="fas fa-link text-[#555] mt-1"></i>
+                        <p class="text-sm font-medium text-white italic">"${w.def}"</p>
+                    </div>
+                    <div class="drop-target-area min-h-[40px] mt-auto" id="target-${w.id}"><span class="text-[9px] uppercase tracking-widest text-[#555] font-black">Drop Here</span></div>
+                    <div id="followup-${w.id}" class="hidden mt-4 bg-black/50 p-4 rounded-xl border-l-4 border-[var(--brand-accent)]">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-[#888] mb-1">Speak</p>
+                        <p class="text-base font-bold text-white mb-2 leading-tight">${w.question}</p>
+                        <p class="text-xs font-bold text-[var(--brand-accent)] italic">"${w.starter}"</p>
+                    </div>
+                </div>
+            `).join('');
+
+            return step(TYPES.VOCAB, title, `
+                <div class="max-w-7xl mx-auto flex flex-col min-h-[60vh] py-6 animate-in fade-in">
+                    <div class="text-center mb-8">
+                        <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-[0.6em] bg-[var(--brand-accent)]/10 px-4 py-1.5 rounded-full inline-block mb-3">Data Link System</p>
+                        <h2 class="brand-font text-4xl font-black text-white tracking-tighter uppercase">Link the Core Data</h2>
+                    </div>
+                    <div class="w-full max-w-5xl mx-auto word-bank flex justify-center flex-wrap gap-2 mb-8 p-4" id="drag-container">
+                        ${wordListHtml}
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 w-full max-w-6xl mx-auto">
+                        ${dropZonesHtml}
+                    </div>
+                </div>
+            `);
+        }
+
+        function bVideo(title, videoId, reactionPrompt) {
+            return step(TYPES.VIDEO, title, `
+                <div class="max-w-5xl mx-auto w-full flex flex-col items-center animate-in fade-in py-10">
+                    <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-widest bg-[var(--brand-accent)]/10 px-4 py-1.5 rounded-full inline-block mb-8">Video Intel</p>
+                    <div class="video-container w-full mb-12">
+                        <iframe src="https://www.youtube.com/embed/${videoId}?rel=0" frameborder="0" allowfullscreen></iframe>
+                    </div>
+                    <div class="bg-[#181818] p-10 rounded-3xl border border-white/10 w-full text-center shadow-2xl">
+                        <p class="text-[10px] font-black text-[#888] uppercase tracking-widest mb-4">Reaction</p>
+                        <p class="text-3xl font-black text-white leading-tight">${reactionPrompt}</p>
+                    </div>
+                </div>
+            `);
+        }
+
+        // PRE-WATCH TEMPLATE
+        function bPreWatch(title, prompt, quote, starter) {
+            return step(TYPES.PRE, title, `
+                <div class="max-w-5xl mx-auto flex flex-col items-center justify-center min-h-[60vh] space-y-12 animate-in fade-in text-center">
+                    <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-widest bg-[var(--brand-accent)]/10 px-4 py-1.5 rounded-full inline-block">Pre-Watch Intel</p>
+                    <h2 class="brand-font text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight">${prompt}</h2>
+                    <div class="bg-[#181818] p-12 rounded-3xl border border-white/10 w-full max-w-3xl shadow-2xl relative overflow-hidden">
+                        <i class="fas fa-quote-right absolute top-8 right-8 text-6xl text-white/5"></i>
+                        <p class="text-3xl md:text-4xl font-black text-white/80 leading-tight italic">"${quote}"</p>
+                    </div>
+                    <div class="w-full text-left p-8 bg-white/5 rounded-2xl border-l-4 border-white/20 mt-8">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-[#888] mb-3">Sync Response</p>
+                        <p class="text-2xl font-bold text-[var(--brand-accent)]">"${starter}"</p>
+                    </div>
+                </div>
+            `);
+        }
+
+        // SLEEK SCRIPT TEMPLATE
+        function bScript(title, lines, targetIdx, analysisData) {
+            const linesHtml = lines.map((line, i) => {
+                if(i === targetIdx) return `
+                    <div class="script-item active group" onclick="revealAnalysis(this, '${esc(analysisData.grammar)}', '${esc(analysisData.logic)}', '${esc(analysisData.followup)}', '${esc(analysisData.starter)}')">
+                        <div class="text-3xl md:text-4xl font-black leading-tight">
+                            ${line.replace(/\[(.*?)\]/g, '<span class="highlight">$1</span>')}
+                        </div>
+                    </div>`;
+                return `<div class="script-item"><div class="text-2xl md:text-3xl font-bold leading-tight">${line}</div></div>`;
+            }).join('');
+
+            return step(TYPES.SCRIPT, title, `
+                <div class="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-start animate-in fade-in py-10">
+                    <div class="lg:col-span-7 space-y-2">
+                        <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-widest mb-4 ml-6">Raw Transcript</p>
+                        ${linesHtml}
+                    </div>
+                    <div class="lg:col-span-5">
+                        <div class="intel-sidebar sticky top-24 opacity-0 transition-all duration-500 hidden translate-x-8" id="reveal-content">
+                            <div class="flex justify-between items-start mb-8">
+                                <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-widest">Grammar Insight</p>
+                                <button onclick="hideAnalysis()" class="text-[#888] hover:text-white bg-white/5 w-8 h-8 rounded-full flex items-center justify-center transition-colors"><i class="fas fa-times"></i></button>
+                            </div>
+                            <h3 class="brand-font text-4xl text-white font-black tracking-tighter mb-8 uppercase" id="a-grammar">Extracting...</h3>
+                            
+                            <div class="space-y-4 mb-10">
+                                <p class="text-[10px] font-black text-[#888] uppercase tracking-widest">Usage Logic</p>
+                                <p class="text-lg text-[#e0e0e0] font-medium leading-relaxed" id="a-logic">...</p>
+                            </div>
+
+                            <div class="bg-[#242424] p-8 rounded-2xl border-l-4 border-[var(--brand-accent)]">
+                                <p class="text-[10px] font-black text-[#888] uppercase tracking-widest mb-3">Speak</p>
+                                <p class="text-xl font-bold text-white mb-4 leading-tight" id="a-question">Apply Context</p>
+                                <p class="text-sm font-bold text-[var(--brand-accent)] italic" id="a-starter">"..."</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
+
+        // TIMELINE GRAPHIC
+        function bTimelineGrammar(title, desc, questions) {
+            return step(TYPES.GRAMMAR, title, `
+                <div class="max-w-6xl mx-auto flex flex-col items-center py-10 animate-in fade-in">
+                    <div class="text-center mb-16">
+                        <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-[0.8em] bg-[var(--brand-accent)]/10 px-4 py-1.5 rounded-full inline-block mb-6">Time Flow Analysis</p>
+                        <h2 class="brand-font text-5xl md:text-7xl font-black text-white tracking-tighter uppercase mb-4">${title}</h2>
+                        <p class="text-xl text-[#888] font-medium max-w-2xl mx-auto">${desc}</p>
+                    </div>
+
+                    <!-- Timeline Graphic -->
+                    <div class="w-full max-w-4xl bg-[#121212] border border-white/5 rounded-3xl p-12 mb-16 relative overflow-hidden shadow-2xl">
+                        <div class="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--brand-accent)]/5 to-transparent"></div>
+                        
+                        <div class="timeline-container">
+                            <div class="timeline-line"></div>
+                            
+                            <!-- Past Node -->
+                            <div class="absolute left-[20%] top-1/2 transform -translate-y-1/2 flex flex-col items-center">
+                                <div class="w-4 h-4 bg-white rounded-full z-10 shadow-[0_0_15px_rgba(255,255,255,0.8)] relative">
+                                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-center w-32">
+                                        <p class="font-black uppercase tracking-widest text-xs text-white">Past Simple</p>
+                                        <p class="text-[10px] text-[#888]">(Finished)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Present Node -->
+                            <div class="absolute left-[80%] top-1/2 transform -translate-y-1/2 flex flex-col items-center">
+                                <div class="w-4 h-4 bg-[var(--brand-accent)] rounded-full z-10 shadow-[0_0_15px_var(--brand-accent)] relative">
+                                    <div class="absolute -bottom-10 left-1/2 -translate-x-1/2 text-center w-32">
+                                        <p class="font-black uppercase tracking-widest text-xs text-[var(--brand-accent)]">Present</p>
+                                        <p class="text-[10px] text-[#888]">(Now)</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Present Perfect Arc -->
+                            <div class="absolute left-[20%] right-[20%] top-0 h-1/2 border-t-2 border-dashed border-[var(--brand-accent)] rounded-t-full"></div>
+                            <div class="absolute left-[20%] w-[60%] top-0 h-1/2 bg-gradient-to-b from-[var(--brand-accent)]/20 to-transparent rounded-t-full pointer-events-none"></div>
+                            <p class="absolute top-[-10px] left-1/2 transform -translate-x-1/2 -translate-y-full font-black text-white uppercase tracking-widest text-sm bg-[#121212] px-4">Present Perfect</p>
+                            <p class="absolute top-[5px] left-1/2 transform -translate-x-1/2 -translate-y-full font-bold text-[#888] text-[10px] uppercase tracking-wider">(Life Exp. up to Now)</p>
+                        </div>
+                    </div>
+
+                    <!-- Questions -->
+                    <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-6">
+                        ${questions.map(q => `
+                            <div class="bg-white/5 p-8 rounded-2xl border-l-4 border-white/20">
+                                <p class="text-xl font-bold text-white mb-4">"${q.q}"</p>
+                                <p class="text-sm font-bold text-[var(--brand-accent)] italic">"${q.s}"</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `);
+        }
+
+        function bLogicGrammar(title, rule, examples, question, starter) {
+            return step(TYPES.GRAMMAR, title, `
+                <div class="max-w-5xl mx-auto space-y-10 animate-in fade-in py-10">
+                    <div class="text-center space-y-4 mb-12">
+                        <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-[0.8em] bg-[var(--brand-accent)]/10 px-4 py-1.5 rounded-full inline-block">Logic Formalization</p>
+                        <h2 class="brand-font text-6xl md:text-7xl font-black text-white tracking-tighter uppercase">${title}</h2>
+                        <p class="text-xl text-[#b3b3b3] font-medium max-w-2xl mx-auto">${rule}</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                        ${examples.map(ex => `
+                            <div class="glass-card p-10 hover:border-[var(--brand-accent)]/50 transition-colors border border-white/5 bg-[#181818]">
+                                <p class="text-[10px] font-black uppercase text-[#888] tracking-widest mb-4">${ex.context}</p>
+                                <p class="text-3xl font-black text-white leading-tight">${ex.text.replace(/\[(.*?)\]/g, '<span class="text-[var(--brand-accent)]">$1</span>')}</p>
+                            </div>
+                        `).join('')}
+                    </div>
+                    ${question ? `
+                    <div class="w-full max-w-4xl mx-auto p-10 bg-[#181818] rounded-3xl border-l-4 border-[var(--brand-accent)] shadow-2xl mt-8 text-left">
+                        <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-widest mb-4">Live Application Prompt</p>
+                        <p class="text-3xl font-black text-white mb-6 leading-tight">"${question}"</p>
+                        <p class="text-xl font-bold text-[#888] italic">Starter: "${starter}"</p>
+                    </div>
+                    ` : ''}
+                </div>
+            `);
+        }
+
+        function bQuizDrill(id, instruction, prefix, suffix, options, correctIdx, followup, starter) {
+            return step(TYPES.DRILL, instruction, `
+                <div class="max-w-4xl mx-auto w-full flex flex-col items-center py-10 animate-in fade-in">
+                    <p class="text-[10px] font-black text-[var(--hp-red)] uppercase tracking-[0.8em] mb-6 animate-pulse border border-[var(--hp-red)]/30 px-4 py-1 rounded-full">Combat Trial</p>
+                    <h2 class="brand-font text-5xl font-black text-white tracking-tighter mb-16 text-center uppercase">${instruction}</h2>
+                    
+                    <div class="text-4xl md:text-5xl font-black text-white leading-tight w-full text-center mb-16 bg-[#181818] p-12 rounded-[32px] border border-white/5 shadow-xl">
+                        ${prefix} <span id="quiz-blank-${id}" class="inline-block border-b-4 border-[var(--brand-accent)] min-w-[160px] text-[var(--brand-accent)] pb-2 mx-4 uppercase transition-all duration-300">&nbsp;</span> ${suffix}
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-4 w-full max-w-2xl mx-auto" id="quiz-options-${id}">
+                        ${options.map((opt, i) => `
+                            <button onclick="handleCombatTrial('${id}', this, ${i === correctIdx}, '${esc(opt)}', '${esc(followup)}', '${esc(starter)}')" class="interactive-btn group">
+                                <div class="flex items-center gap-6"><span class="text-xl font-black text-[#555] w-8">${i+1}</span><span class="text-2xl font-bold text-white">${opt}</span></div>
+                                <i class="fas fa-crosshairs text-[#555] group-hover:text-[var(--brand-accent)] text-xl transition-colors"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                    
+                    <div id="followup-box-${id}" class="hidden w-full max-w-2xl mx-auto mt-12 p-10 bg-[#242424] rounded-2xl border-l-4 border-[var(--brand-accent)] shadow-2xl slide-down">
+                        <p class="text-[10px] font-black uppercase text-[var(--brand-accent)] tracking-widest mb-3">Follow-up</p>
+                        <p class="text-2xl font-bold mb-4 text-white leading-tight">${followup}</p>
+                        <p class="text-lg text-[#b3b3b3] italic font-medium">"${starter}"</p>
+                    </div>
+                </div>
+            `);
+        }
+
+        function bDecisionStand(title, optionA, optionB, starter) {
+            return step(TYPES.STAND, title, `
+                <div class="max-w-6xl mx-auto w-full flex flex-col items-center space-y-16 py-10 animate-in fade-in text-center">
+                    <div class="space-y-4">
+                        <p class="text-[10px] font-black text-[#888] uppercase tracking-[0.8em] border border-white/10 px-4 py-1.5 rounded-full inline-block">Value Assessment</p>
+                        <h2 class="brand-font text-6xl font-black text-white tracking-tighter uppercase">${title}</h2>
+                    </div>
+                    <div class="w-full flex flex-col md:flex-row gap-10 items-center justify-between">
+                        <div class="flex-1 p-12 bg-[#181818] rounded-[40px] border border-white/5 space-y-6 w-full shadow-xl">
+                            <p class="text-6xl">${optionA.icon}</p>
+                            <h3 class="text-2xl font-black text-white uppercase">${optionA.text}</h3>
+                        </div>
+                        <div class="w-full md:w-64 flex flex-col items-center gap-6">
+                            <input type="range" min="0" max="100" value="50" class="wolf-slider">
+                            <p class="text-[10px] font-black text-[#666] uppercase tracking-widest">Adjust to your stance</p>
+                        </div>
+                        <div class="flex-1 p-12 bg-[#181818] rounded-[40px] border border-white/5 space-y-6 w-full shadow-xl">
+                            <p class="text-6xl">${optionB.icon}</p>
+                            <h3 class="text-2xl font-black text-white uppercase">${optionB.text}</h3>
+                        </div>
+                    </div>
+                    <div class="w-full max-w-3xl p-10 bg-[#121212] rounded-[32px] text-left border-l-4 border-[var(--brand-accent)] shadow-2xl mt-8">
+                        <p class="text-[9px] font-black text-[var(--brand-accent)] uppercase mb-4 tracking-widest">Defend your position</p>
+                        <p class="text-2xl font-bold text-white italic leading-tight">"${starter}"</p>
+                    </div>
+                </div>
+            `);
+        }
+
+        function bSpeaking(title, prompt, bullets, starter) {
+            return step(TYPES.SPEAKING, title, `
+                <div class="max-w-5xl mx-auto w-full flex flex-col items-center justify-center min-h-[60vh] text-center animate-in fade-in py-10">
+                    <div class="flex items-center gap-3 mb-10 bg-white/5 text-white px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.3em] border border-white/10">
+                        <i class="fas fa-microphone text-[var(--brand-accent)]"></i> Live Arena
+                    </div>
+                    <h2 class="brand-font text-6xl md:text-8xl font-black tracking-tighter text-white leading-none mb-12 uppercase">${prompt}</h2>
+                    ${bullets ? `<div class="flex flex-wrap justify-center gap-4 max-w-3xl mb-12">${bullets.map(b => `<span class="px-8 py-3 bg-[#181818] border border-white/5 text-[#b3b3b3] rounded-full font-bold text-lg">${b}</span>`).join('')}</div>` : ''}
+                    <div class="w-full max-w-3xl p-12 rounded-[32px] bg-[#181818] border-l-4 border-[var(--brand-accent)] text-left shadow-2xl">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-[#888] mb-6">Execution Prompt</p>
+                        <p class="text-3xl font-bold text-[var(--brand-accent)] leading-tight italic mb-8">"${starter}"</p>
+                    </div>
+                </div>
+            `);
+        }
+
+        function bWrap() {
+            return step(TYPES.WRAP, "Mission Clear", `
+                <div class="text-center max-w-3xl mx-auto flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in">
+                    <div class="w-32 h-32 rounded-full bg-[var(--brand-accent)]/20 mx-auto flex items-center justify-center text-6xl text-[var(--brand-accent)] mb-10 shadow-[0_0_60px_rgba(29,185,84,0.3)]">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h1 class="brand-font text-8xl font-black text-white tracking-tighter mb-6 uppercase">Mission <br> <span class="text-[var(--brand-accent)]">Accomplished</span></h1>
+                    <p class="text-xl text-[#b3b3b3] mb-16 font-medium">You've mastered the Present Perfect and banished the Imposter Syndrome.</p>
+                    <button onclick="goHome()" class="px-12 py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-sm hover:scale-105 transition-all rounded-full shadow-xl">Return to Dashboard</button>
+                </div>
+            `);
+        }
+
+        // --- LESSON DATA (EXACTLY 35 STEPS) ---
+        const lessonData = [
+            // 1-3
+            bGuide("Teacher Setup", ["Level B1: Focus on Present Perfect for Life Experiences.", "Rule: Context first. Grammar emerges from the TED-Ed video.", "Target: 80% Student Talk Time."]),
+            bGuide("Session Targets", ["Vocabulary: Fraud, accomplishments, banish", "Grammar: Present Perfect vs Past Simple", "Speaking: Discussing insecurities and success"]),
+            step(TYPES.COVER, "The Imposter", `<div class="text-center space-y-12 min-h-[60vh] flex flex-col justify-center items-center"><div class="w-64 h-64 bg-[#0a0a0a] shadow-2xl rounded-[40px] border border-white/5 flex items-center justify-center overflow-hidden"><img src="https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80" class="absolute inset-0 w-full h-full object-cover opacity-40 mix-blend-luminosity"><i class="fas fa-user-secret text-8xl text-[var(--brand-accent)] relative z-10"></i></div><h1 class="brand-font text-[8rem] font-black text-white leading-none tracking-tighter uppercase">THE <br> <span class="text-transparent bg-clip-text bg-gradient-to-r from-white to-[#555]">IMPOSTER</span></h1></div>`),
+            
+            // 4-5
+            bPrediction("Icebreaker 1", "Have you ever felt that you didn't deserve a compliment or a promotion?", "It's called Imposter Syndrome, and it affects 70% of people.", "Yes, once I felt that I didn't deserve..."),
+            bPrediction("Icebreaker 2", "Who do you think feels more insecure: a beginner or an expert?", "Experts often feel more insecure because they know how much they still don't know.", "I think experts feel more insecure because..."),
+            
+            // 6 (Drag Vocab - Shuffled All-in-One)
+            bDragVocab("Data Link: Full Sync", [
+                {id: "fraud", text: "Fraud", def: "A person who tricks others; someone who is not what they pretend to be.", question: "Have you ever felt like a fraud?", starter: "Yes, I felt like a fraud when..."},
+                {id: "swindler", text: "Swindler", def: "A person who uses deception to take away money or credit.", question: "Why would Einstein call himself a swindler?", starter: "He probably felt like a swindler because..."},
+                {id: "accomplish", text: "Accomplishments", def: "Something successful you do after a lot of hard work.", question: "What is one of your biggest accomplishments?", starter: "One of my biggest accomplishments is..."},
+                {id: "susceptible", text: "Susceptible", def: "Easy to be influenced, harmed, or affected by something.", question: "Who is more susceptible to stress?", starter: "I think ... are more susceptible because..."},
+                {id: "unwarranted", text: "Unwarranted", def: "Not necessary, not deserved, or lacking a good reason.", question: "Do you ever have unwarranted fears?", starter: "Sometimes I have an unwarranted fear of..."},
+                {id: "banish", text: "Banish", def: "To get rid of something completely so it doesn't return.", question: "If you could banish one negative feeling, what would it be?", starter: "If I could, I would banish..."}
+            ]),
+
+            // PRE-WATCH ADDITIONS
+            bPreWatch("Discovery 1", "The Genius Dilemma", "Albert Einstein described himself as an 'involuntary swindler' whose work didn't deserve attention.", "I think Einstein felt like a swindler because..."),
+            bPreWatch("Discovery 2", "The Secret Doubt", "We each doubt ourselves privately, but believe we are alone in thinking that way.", "When I have doubts, I usually hide them because..."),
+
+            // VIDEO PREP
+            step(TYPES.PRE, "Video Prep", `
+                <div class="max-w-4xl mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center space-y-12 animate-in fade-in">
+                    <p class="text-[10px] font-black text-[var(--brand-accent)] uppercase tracking-[0.8em] animate-pulse">Video Preparation</p>
+                    <h2 class="brand-font text-5xl md:text-7xl font-black text-white tracking-tighter leading-tight">You are going to watch a video about <br><span class="text-[var(--brand-accent)]">Imposter Syndrome</span>.</h2>
+                    <div class="bg-[#181818] p-10 rounded-3xl border-l-4 border-[var(--brand-accent)] w-full text-left shadow-2xl mt-8">
+                        <p class="text-[10px] font-black uppercase tracking-widest text-[#888] mb-3">What do you know about it?</p>
+                        <p class="text-3xl font-bold text-white italic">"From what I know, Imposter Syndrome is..."</p>
+                    </div>
+                </div>
+            `),
+
+            // 10
+            bVideo("The Imposter", "ZQUxL4Jm1Lo", "What surprised you the most about this video?"),
+
+            // 11-14 (Transcript - Sleek Design)
+            bScript("Analysis 1", 
+                ["Albert Einstein experienced something similar.", "He described himself as an involuntary swindler.", "[Why can't so many of us shake feelings that we haven't earned our accomplishments?]"], 
+                2, 
+                {grammar: "Present Perfect (Experience)", logic: "Haven't earned (Have + V3). Used for life experiences up to now, where the exact time is not important.", followup: "What is an accomplishment you HAVE earned?", starter: "I have definitely earned my..."}
+            ),
+            bScript("Analysis 2", 
+                ["[Psychologist Pauline Rose Clance was the first to study this unwarranted sense of insecurity.]", "In her work, she noticed many patients shared a concern.", "They didn't believe they deserved their spots."], 
+                0, 
+                {grammar: "Past Simple (Finished Action)", logic: "Was / Noticed / Didn't believe. Used for finished actions in the past with a clear time or historical context.", followup: "When was the last time you studied something difficult?", starter: "The last time I studied something difficult was..."}
+            ),
+            bScript("Analysis 3", 
+                ["Clance first studied imposterism in female students.", "[Since that first study, the same thing has been established across gender and race.]", "It is not a disease or abnormality."], 
+                1, 
+                {grammar: "Present Perfect + Since", logic: "Has been established. Used for actions that started in the past (Since that study) and continue to be true today.", followup: "What have you done since you woke up today?", starter: "Since I woke up, I have..."}
+            ),
+            bScript("Analysis 4", 
+                ["Intense feelings of imposterism can prevent people from sharing ideas.", "At least so far, the most surefire way to combat it is to talk.", "[Once you're aware of the phenomenon, you can combat it.]"], 
+                2, 
+                {grammar: "Zero Conditional / Logic", logic: "Once (When) you are aware, you can combat it. Expresses a logical truth or consequence.", followup: "Once you realize a mistake, what do you do?", starter: "Once I realize a mistake, I..."}
+            ),
+
+            // 15-18 (Grammar)
+            bTimelineGrammar("Time Architect", "Visualizing the difference between finished past and life experiences up to now.", [
+                {q: "What did you eat yesterday?", s: "Yesterday, I ate... (Finished)"},
+                {q: "Have you ever eaten sushi?", s: "Yes, I have eaten sushi. (Experience in life)"}
+            ]),
+            bLogicGrammar("Present Perfect", "Used for life experiences up to now. The exact time is NOT important. Structure: Have/Has + Past Participle (V3).", [
+                {text: "I [have felt] like an imposter.", context: "Experience"},
+                {text: "She [has earned] many awards.", context: "Achievement"}
+            ], "What is a great book you have read?", "I have read..."),
+            bLogicGrammar("Past Simple", "Used for finished actions in the past. The time is known or implied. Structure: Verb + ED (or irregular).", [
+                {text: "Einstein [described] himself as a fraud.", context: "Finished Past"},
+                {text: "I [graduated] in 2020.", context: "Specific Time"}
+            ], "What did you do last weekend?", "Last weekend, I..."),
+            bLogicGrammar("Since & For", "Use Present Perfect with 'Since' (starting point) or 'For' (duration of time).", [
+                {text: "I [have worked] here [since] 2018.", context: "Starting Point"},
+                {text: "She [has lived] here [for] 5 years.", context: "Duration"}
+            ], "How long have you studied English?", "I have studied English for/since..."),
+
+            // 19-27 (Drills - 9 pages)
+            bQuizDrill("q1", "Time Focus", "I", "like a fraud when I started my new job last year.", ["have felt", "felt", "feel"], 1, "Did you feel nervous on your first day?", "Yes, I felt..."),
+            bQuizDrill("q2", "Life Experience", "She", "three books in her life.", ["has written", "wrote", "writes"], 0, "How many books have you read this year?", "This year, I have read..."),
+            bQuizDrill("q3", "Duration", "They have lived in that city", "ten years.", ["since", "for", "in"], 1, "How long have you lived in your city?", "I have lived here for/since..."),
+            bQuizDrill("q4", "Starting Point", "I haven't seen him", "Monday.", ["since", "for", "on"], 0, "Who haven't you seen since last year?", "I haven't seen... since last year."),
+            bQuizDrill("q5", "Vocab: Fake", "Einstein thought he was a", ".", ["swindler", "accomplishment", "susceptible"], 0, "Why do smart people think they are fakes?", "I think they feel that way because..."),
+            bQuizDrill("q6", "Vocab: Remove", "We need to", "these negative thoughts.", ["banish", "fraud", "unwarranted"], 0, "How do you banish stress?", "To banish stress, I usually..."),
+            bQuizDrill("q7", "Mixed Check", "Have you ever", "an award?", ["won", "win", "wonned"], 0, "Have you ever won a competition?", "Yes, I have won... / No, I have never won..."),
+            bQuizDrill("q8", "Past Simple Check", "He", "his first award in 1999.", ["has won", "win", "won"], 2, "What was the best year of your life?", "The best year was... because..."),
+            bQuizDrill("q9", "Present Perfect Negative", "I", "that movie yet.", ["haven't seen", "didn't saw", "don't see"], 0, "What is a famous movie you haven't seen?", "I haven't seen... yet."),
+
+            // 28-29 (Decisions)
+            bDecisionStand("The Best Approach", {icon: "🤐", text: "Hide your doubts"}, {icon: "🗣️", text: "Share your doubts"}, "In a professional environment, I believe it is better to... because..."),
+            bDecisionStand("Success Factor", {icon: "🍀", text: "Pure Luck"}, {icon: "💪", text: "Hard Work"}, "When I look at my accomplishments, I feel they are mostly..."),
+
+            // 30-31 (Arenas)
+            bSpeaking("Live Arena 1", "Have you ever felt like an imposter?", ["At work", "At school", "With friends", "Hobbies"], "Yes, I felt like an imposter when I..."),
+            bSpeaking("Live Arena 2", "What advice would you give?", ["To a friend", "To a coworker", "To a student"], "If a friend told me they felt like a fraud, I would say..."),
+            
+            // 35
+            bWrap()
+        ];
+
+        // --- CORE LOGIC RUNTIME ---
+        function startMission() {
+            document.getElementById('dashboard').classList.add('hidden');
+            document.getElementById('top-nav').classList.remove('hidden');
+            document.getElementById('mission-arena').classList.replace('hidden', 'flex');
+            document.getElementById('nav-console').classList.replace('hidden', 'flex');
+            
+            buildLessonNavigator();
+            renderStep();
+        }
+
+        function goHome() {
+            document.getElementById('dashboard').classList.remove('hidden');
+            document.getElementById('top-nav').classList.add('hidden');
+            document.getElementById('mission-arena').classList.replace('flex', 'hidden');
+            document.getElementById('nav-console').classList.replace('flex', 'hidden');
+            state.current = 0;
+            document.getElementById('whiteboard').classList.remove('active');
+            document.getElementById('lesson-navigator').classList.remove('active');
+        }
+
+        function renderStep() {
+            const step = lessonData[state.current];
+            
+            const pTitle = document.getElementById('console-title');
+            if(pTitle) pTitle.innerText = step.title;
+            
+            const pType = document.getElementById('console-type');
+            if(pType) pType.innerText = step.type;
+
+            const sCount = document.getElementById('console-counter');
+            if(sCount) sCount.innerText = `${String(state.current + 1).padStart(2, '0')} / ${lessonData.length}`;
+            
+            const content = document.getElementById('mission-content');
+            if(content) content.innerHTML = `<div class="w-full max-w-7xl mx-auto">${step.html}</div>`;
+            
+            updateHUD();
+            
+            // Update active state in navigator
+            const navBtns = document.getElementById('nav-steps-list').children;
+            Array.from(navBtns).forEach((btn, i) => {
+                if(i === state.current) {
+                    btn.classList.add('bg-[var(--brand-accent)]', 'text-black');
+                    btn.classList.remove('text-[#888]', 'hover:bg-white/5');
+                } else {
+                    btn.classList.remove('bg-[var(--brand-accent)]', 'text-black');
+                    btn.classList.add('text-[#888]', 'hover:bg-white/5');
+                }
+            });
+        }
+
+        function nextStep() { if (state.current < lessonData.length - 1) { state.current++; renderStep(); } else { goHome(); } }
+        function prevStep() { if (state.current > 0) { state.current--; renderStep(); } }
+
+        function toggleWhiteboard() { document.getElementById('whiteboard').classList.toggle('active'); document.getElementById('lesson-navigator').classList.remove('active'); }
+        function toggleLessonNavigator() { document.getElementById('lesson-navigator').classList.toggle('active'); document.getElementById('whiteboard').classList.remove('active'); }
+
+        function toggleFullscreen() {
+            const btnIcon = document.querySelector('[title="Toggle Fullscreen"] i');
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => { console.error(err); });
+                if (btnIcon) { btnIcon.classList.remove('fa-expand'); btnIcon.classList.add('fa-compress'); }
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen();
+                if (btnIcon) { btnIcon.classList.remove('fa-compress'); btnIcon.classList.add('fa-expand'); }
+            }
+        }
+
+        // --- DRAG AND DROP LOGIC ---
+        let draggedWordId = null;
+
+        function setupDragAndDrop() {
+            const draggables = document.querySelectorAll('.draggable-word');
+            const dropZones = document.querySelectorAll('.drop-zone');
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', (e) => {
+                    draggedWordId = draggable.getAttribute('data-word');
+                    e.dataTransfer.setData('text/plain', draggedWordId);
+                    setTimeout(() => draggable.classList.add('opacity-50'), 0);
+                });
+                draggable.addEventListener('dragend', () => {
+                    draggable.classList.remove('opacity-50');
+                });
+            });
+
+            dropZones.forEach(zone => {
+                zone.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                    zone.classList.add('hovered');
+                });
+                zone.addEventListener('dragleave', () => {
+                    zone.classList.remove('hovered');
+                });
+                zone.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    zone.classList.remove('hovered');
+                    const targetId = zone.getAttribute('data-target');
+                    
+                    if (draggedWordId === targetId) {
+                        const draggedElement = document.getElementById('word-' + draggedWordId);
+                        const targetArea = document.getElementById('target-' + targetId);
+                        
+                        targetArea.innerHTML = '';
+                        targetArea.appendChild(draggedElement);
+                        
+                        draggedElement.classList.remove('cursor-grab', 'bg-[#1f1f1f]', 'border-white/10');
+                        draggedElement.classList.add('bg-[var(--brand-accent)]', 'text-black', 'border-transparent', 'cursor-default');
+                        draggedElement.setAttribute('draggable', 'false');
+                        
+                        zone.classList.add('border-solid', 'border-[var(--brand-accent)]', 'bg-[var(--brand-accent)]/5');
+                        zone.classList.remove('border-dashed', 'border-white/20');
+                        
+                        const followup = document.getElementById('followup-' + targetId);
+                        if (followup) {
+                            followup.classList.remove('hidden');
+                            followup.classList.add('animate-in', 'slide-down');
+                        }
+                    } else {
+                        // Wrong Drop feedback
+                        zone.classList.add('border-[var(--hp-red)]', 'bg-[var(--hp-red)]/10');
+                        setTimeout(() => {
+                            zone.classList.remove('border-[var(--hp-red)]', 'bg-[var(--hp-red)]/10');
+                        }, 400);
+                    }
+                });
+            });
+        }
+
+        // --- SCRIPT REVEAL LOGIC ---
+        function revealAnalysis(el, grammar, logic, followup, starter) {
+            document.querySelectorAll('.script-item').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            
+            const g = document.getElementById('a-grammar'); if(g) g.innerText = grammar;
+            const l = document.getElementById('a-logic'); if(l) l.innerText = logic;
+            const q = document.getElementById('a-question'); if(q) q.innerText = followup;
+            const s = document.getElementById('a-starter'); if(s) s.innerText = `STARTER: "${starter}"`;
+            
+            const reveal = document.getElementById('reveal-content');
+            if(reveal) {
+                reveal.classList.remove('hidden');
+                setTimeout(() => {
+                    reveal.classList.remove('opacity-0', 'translate-x-8');
+                }, 10);
+            }
+        }
+
+        function hideAnalysis() {
+            document.querySelectorAll('.script-item').forEach(b => b.classList.remove('active'));
+            const reveal = document.getElementById('reveal-content');
+            if(reveal) {
+                reveal.classList.add('opacity-0', 'translate-x-8');
+                setTimeout(() => reveal.classList.add('hidden'), 300);
+            }
+        }
+
+        function handleCombatTrial(id, row, isCorrect, text, followup, starter) {
+            if(row.parentElement.classList.contains('locked')) return;
+            const parent = row.parentElement;
+            parent.classList.add('locked');
+            Array.from(parent.children).forEach(c => {
+                c.classList.add('opacity-40', 'cursor-default');
+                c.classList.remove('hover:bg-[#333]');
+            });
+            row.classList.remove('opacity-40');
+            if(isCorrect) {
+                const blank = document.getElementById(`quiz-blank-${id}`);
+                if(blank) { blank.innerText = text; blank.classList.remove('border-b-4'); }
+                row.classList.add('correct');
+                const fBox = document.getElementById(`followup-box-${id}`);
+                if(fBox) fBox.classList.remove('hidden');
+            } else {
+                row.classList.add('wrong');
+            }
+        }
+
+        function buildLessonNavigator() {
+            const list = document.getElementById('nav-steps-list');
+            if (!list) return;
+            list.innerHTML = '';
+            lessonData.forEach((step, i) => {
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left p-4 rounded-xl flex items-center gap-4 transition-all ${i === state.current ? 'bg-[var(--brand-accent)] text-black font-black' : 'text-[#b3b3b3] hover:bg-white/5'}`;
+                btn.innerHTML = `<span class="rajdhani text-sm">${String(i+1).padStart(2, '0')}</span><div class="flex flex-col truncate"><span class="text-xs truncate uppercase font-bold">${step.title}</span><span class="text-[9px] opacity-70">${step.type}</span></div>`;
+                btn.onclick = () => { jumpToTrack(i); };
+                list.appendChild(btn);
+            });
+        }
+
+        window.onload = () => {
+            buildLessonNavigator();
+        };
+    </script>
+</body>
+</html>
